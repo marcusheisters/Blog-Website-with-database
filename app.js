@@ -26,64 +26,88 @@ app.use(express.static("public"));
 
 
 // Schemas 
-const postSchema = {title: String, content: String};
-const Post = mongoose.model("Post", postSchema); 
+const postSchema = { title: String, content: String };
+const Post = mongoose.model("Post", postSchema);
 
 let posts = [];
 
 app.get("/", function (req, res) {
-  res.render("home", {
-    startingContent: homeStartingContent,
-    posts: posts
+  Post.find({}, (err, postItems) => {
+    postItems.forEach(post => {
+      console.log(post);
+      let found = false;
+      for (let i = 0; i < posts.length; i++) {
+        let item = posts[i];
+        console.log(`itemName: ${item.title} postName: ${post.title}`);
+        if (item.title === post.title) {
+          found = true;
+          break;
+        }
+      };
+      if (!found) {
+        posts.push(post);
+      }
+  });
+
+    console.log(` posts: ${posts}`);
+
+    res.render("home", {
+      startingContent: homeStartingContent,
+      posts: posts
+    });
   });
 });
 
-app.get("/about", (req, res) => {
-  res.render("about", { aboutContent: aboutContent });
-});
-
-app.get("/contact", (req, res) => {
-  res.render("contact", { contactContent: contactContent });
-});
-
-app.get("/compose", (req, res) => {
-  res.render("compose");
-});
-
-app.post("/compose", (req, res) => {
-  const post = {
-    title: req.body.postTitle,
-    content: req.body.postBody
-  };
-
-  const postItem = new Post({
-    title: post.title,
-    content: post.content
+  app.get("/about", (req, res) => {
+    res.render("about", { aboutContent: aboutContent });
   });
 
-  postItem.save();
-  posts.push(post);
-
-  res.redirect("/");
-
-});
-
-app.get("/posts/:postName", function (req, res) {
-  const requestedTitle = _.lowerCase(req.params.postName);
-
-  posts.forEach(function (post) {
-    const storedTitle = _.lowerCase(post.title);
-
-    if (storedTitle === requestedTitle) {
-      res.render("post", {
-        title: post.title,
-        content: post.content
-      });
-    }
+  app.get("/contact", (req, res) => {
+    res.render("contact", { contactContent: contactContent });
   });
 
-});
+  app.get("/compose", (req, res) => {
+    res.render("compose");
+  });
 
-app.listen(3000, function () {
-  console.log("Server started on port 3000");
-});
+  app.post("/compose", (req, res) => {
+    const post = {
+      title: req.body.postTitle,
+      content: req.body.postBody
+    };
+
+    const postItem = new Post({
+      title: post.title,
+      content: post.content
+    });
+
+    posts.push(post);
+    postItem.save((err, doc) => {
+      if (!err) {
+        res.redirect("/");
+      }
+    });
+
+
+  });
+
+  app.get("/posts/:postName", function (req, res) {
+    const requestedTitle = _.lowerCase(req.params.postName);
+
+    posts.forEach((post) => {
+      const storedTitle = _.lowerCase(post.title);
+
+
+      if (storedTitle === requestedTitle) {
+        res.render("post", {
+          title: post.title,
+          content: post.content
+        });
+      }
+    });
+
+  });
+
+  app.listen(3000, function () {
+    console.log("Server started on port 3000");
+  });
