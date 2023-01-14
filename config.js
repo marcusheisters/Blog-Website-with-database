@@ -1,2 +1,0 @@
-// exports.DB_CONNECTION = process.env.DB_CONNECTION || 'mongodb+srv://marcus:UjLdUs0TvvO1y3IW@cluster0.uw46fbj.mongodb.net';
-exports.DB_CONNECTION = process.env.DB_CONNECTION || 'mongodb://localhost:27017';
