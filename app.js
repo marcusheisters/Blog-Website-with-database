@@ -47,7 +47,7 @@ app.get("/", function (req, res) {
       if (!found) {
         posts.push(post);
       }
-  });
+    });
 
     console.log(` posts: ${posts}`);
 
@@ -58,56 +58,52 @@ app.get("/", function (req, res) {
   });
 });
 
-  app.get("/about", (req, res) => {
-    res.render("about", { aboutContent: aboutContent });
+app.get("/about", (req, res) => {
+  res.render("about", { aboutContent: aboutContent });
+});
+
+app.get("/contact", (req, res) => {
+  res.render("contact", { contactContent: contactContent });
+});
+
+app.get("/compose", (req, res) => {
+  res.render("compose");
+});
+
+app.post("/compose", (req, res) => {
+  const post = {
+    title: req.body.postTitle,
+    content: req.body.postBody
+  };
+
+  const postItem = new Post({
+    title: post.title,
+    content: post.content
   });
 
-  app.get("/contact", (req, res) => {
-    res.render("contact", { contactContent: contactContent });
+  posts.push(post);
+  postItem.save((err, doc) => {
+    if (!err) {
+      res.redirect("/");
+    }
   });
 
-  app.get("/compose", (req, res) => {
-    res.render("compose");
+
+});
+
+app.get("/posts/:postId", function (req, res) {
+  const postId = req.params.postId;
+  Post.findById(postId, (err, foundPost) => {
+    if (!err) {
+      console.log(foundPost);
+      console.log("Post.title: " + foundPost.title);
+      res.render("post", {
+        title: foundPost.title,
+        content: foundPost.content
+      });
+    }
   });
-
-  app.post("/compose", (req, res) => {
-    const post = {
-      title: req.body.postTitle,
-      content: req.body.postBody
-    };
-
-    const postItem = new Post({
-      title: post.title,
-      content: post.content
-    });
-
-    posts.push(post);
-    postItem.save((err, doc) => {
-      if (!err) {
-        res.redirect("/");
-      }
-    });
-
-
-  });
-
-  app.get("/posts/:postName", function (req, res) {
-    const requestedTitle = _.lowerCase(req.params.postName);
-
-    posts.forEach((post) => {
-      const storedTitle = _.lowerCase(post.title);
-
-
-      if (storedTitle === requestedTitle) {
-        res.render("post", {
-          title: post.title,
-          content: post.content
-        });
-      }
-    });
-
-  });
-
-  app.listen(3000, function () {
-    console.log("Server started on port 3000");
-  });
+});
+app.listen(3000, function () {
+  console.log("Server started on port 3000");
+});
